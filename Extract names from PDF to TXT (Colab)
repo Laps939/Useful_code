@@ -1,0 +1,43 @@
+# --- Step 0: Install dependencies ---
+!apt-get install -y poppler-utils
+!pip install pytesseract pdf2image pillow PyMuPDF
+
+import pytesseract
+from pdf2image import convert_from_path
+import fitz
+from PIL import Image
+import re
+from google.colab import files
+import os
+
+print("Upload your PDF file...")
+uploaded = files.upload()
+pdf_filename = list(uploaded.keys())[0]
+
+text = ""
+doc = fitz.open(pdf_filename)
+for page in doc:
+    text += page.get_text("text")
+doc.close()
+
+if len(text.strip()) < 50:
+    print("⚠️ PDF seems to be scanned. Running OCR...")
+    pages = convert_from_path(pdf_filename)
+    text = ""
+    for i, page in enumerate(pages):
+        print(f"Processing page {i+1}/{len(pages)}...")
+        text += pytesseract.image_to_string(page, lang="eng")
+
+pattern = r"[A-Z][A-Za-zÀ-ÖØ-öø-ÿ\-']+\s*,\s*[A-Z][A-Za-zÀ-ÖØ-öø-ÿ\-']+"
+names = re.findall(pattern, text)
+
+names = sorted(set(names))
+
+output_filename = "names_list.txt"
+with open(output_filename, "w", encoding="utf-8") as f:
+    for name in names:
+        f.write(name + "\n")
+
+files.download(output_filename)
+
+print(f"\n  Done! Extracted {len(names)} names and saved to {output_filename}.")

@@ -1,0 +1,41 @@
+# --- Step 1: Install dependencies ---
+!pip install PyMuPDF pillow
+
+from google.colab import files
+import fitz  # PyMuPDF
+import os
+import shutil
+from PIL import Image
+from io import BytesIO
+
+print("Upload your PDF file...")
+uploaded = files.upload()
+pdf_filename = list(uploaded.keys())[0]
+
+output_folder = "extracted_images"
+os.makedirs(output_folder, exist_ok=True)
+
+doc = fitz.open(pdf_filename)
+image_count = 0
+
+for page_index, page in enumerate(doc):
+    image_list = page.get_images(full=True)
+    for image_index, img in enumerate(image_list, start=1):
+        xref = img[0]
+        base_image = doc.extract_image(xref)
+        image_bytes = base_image["image"]
+        image_ext = base_image["ext"]
+
+        # ✅ Correct way: open from BytesIO
+        image = Image.open(BytesIO(image_bytes))
+        image.save(os.path.join(output_folder, f"page{page_index+1}_img{image_index}.{image_ext}"))
+        image_count += 1
+
+doc.close()
+
+zip_filename = "images_extracted.zip"
+shutil.make_archive("images_extracted", 'zip', output_folder)
+
+files.download(zip_filename)
+
+print(f"\n Done! Extracted {image_count} images and zipped them to {zip_filename}.")

@@ -2,10 +2,10 @@ import os
 from moviepy.editor import *
 
 # Path to the folder containing MP4 files
-mp4_folder = "C:/Users/LAPS/PycharmProjects/CSS code gen/downloads/MH3 ost"
+mp4_folder = "C:/Users/"
 
 # Path to the folder where you want to save the MP3 files
-mp3_folder = "C:/Users/LAPS/PycharmProjects/CSS code gen/mp3_output"
+mp3_folder = "C:/Users/.../mp3_output"
 
 # Create the output folder if it doesn't exist
 os.makedirs(mp3_folder, exist_ok=True)
